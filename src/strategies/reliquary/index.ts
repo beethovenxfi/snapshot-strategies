@@ -1,7 +1,8 @@
 import { BigNumber } from '@ethersproject/bignumber';
-import { StaticJsonRpcProvider } from '@ethersproject/providers';
+import { BlockTag, StaticJsonRpcProvider } from '@ethersproject/providers';
 import { formatUnits } from '@ethersproject/units';
 import { Multicaller } from '../../utils';
+import { Contract } from '@ethersproject/contracts';
 
 export const author = 'beethovenx';
 export const version = '0.1.0';
@@ -23,17 +24,17 @@ const abi = [
   {
     inputs: [
       {
-        internalType: 'address',
-        name: 'owner',
-        type: 'address'
+        internalType: 'uint256',
+        name: 'tokenId',
+        type: 'uint256'
       }
     ],
-    name: 'balanceOf',
+    name: 'ownerOf',
     outputs: [
       {
-        internalType: 'uint256',
+        internalType: 'address',
         name: '',
-        type: 'uint256'
+        type: 'address'
       }
     ],
     stateMutability: 'view',
@@ -42,21 +43,16 @@ const abi = [
   {
     inputs: [
       {
-        internalType: 'address',
-        name: 'owner',
-        type: 'address'
-      },
-      {
         internalType: 'uint256',
-        name: 'index',
+        name: 'relicId',
         type: 'uint256'
       }
     ],
-    name: 'tokenOfOwnerByIndex',
+    name: 'levelOnUpdate',
     outputs: [
       {
         internalType: 'uint256',
-        name: '',
+        name: 'level',
         type: 'uint256'
       }
     ],
@@ -123,6 +119,7 @@ export async function strategy(
   addresses: string[],
   options: {
     reliquaryAddress: string;
+    reliquaryDeploymentBlock: BlockTag | string;
     poolId: number;
     maxVotingLevel: number;
     decimals?: number;
@@ -131,60 +128,68 @@ export async function strategy(
 ) {
   const blockTag = typeof snapshot === 'number' ? snapshot : 'latest';
 
+  const lowerCaseAddresses = addresses.map((address) => address.toLowerCase());
+
+  const reliquaryContract = new Contract(
+    options.reliquaryAddress,
+    abi,
+    provider
+  );
+
+  const relicFilter = reliquaryContract.filters.CreateRelic(options.poolId);
+  const createRelicEvents = await reliquaryContract.queryFilter(
+    relicFilter,
+    options.reliquaryDeploymentBlock
+  );
+
   const multi = new Multicaller(network, provider, abi, { blockTag });
 
-  for (let address of addresses) {
-    multi.call(address, options.reliquaryAddress, 'balanceOf', [address]);
+  for (let createRelicEvent of createRelicEvents) {
+    const relicId = createRelicEvent.args!.relicId;
+    multi.call(relicId, options.reliquaryAddress, 'ownerOf', [relicId]);
   }
 
-  // first we need to know how many relics an address owns
-  const userBalances: Record<string, BigNumber> = await multi.execute();
+  const relicsOwners: Record<string, string> = await multi.execute();
 
-  // then we can get all relict ids for those users
-  for (let address of addresses) {
-    for (
-      let position = 0;
-      position < userBalances[address].toNumber();
-      position++
-    ) {
-      multi.call(
-        `${address}[${position}]`,
-        options.reliquaryAddress,
-        'tokenOfOwnerByIndex',
-        [address, position]
-      );
-    }
+  // first we filter all relevant relics by the provided voters
+  const relicsOwnedByVoters = Object.entries(relicsOwners).filter(
+    ([_, owner]) => lowerCaseAddresses.includes(owner.toLowerCase())
+  );
+
+  // now we need to get their corresponding level
+  for (const [relicId, owner] of relicsOwnedByVoters) {
+    multi.call(
+      `${owner}.${relicId}.level`,
+      options.reliquaryAddress,
+      'levelOnUpdate',
+      relicId
+    );
+    multi.call(
+      `${owner}.${relicId}.position`,
+      options.reliquaryAddress,
+      'getPositionForId',
+      relicId
+    );
   }
 
-  const userRelicts: Record<string, BigNumber[]> = await multi.execute();
+  const relicInfosByVoter: Record<
+    string,
+    { [relicId: string]: { level: BigNumber; position: PositionInfo } }
+  > = await multi.execute();
 
-  // with those relict ids, we can now get the positions of the relicts
-  Object.entries(userRelicts).forEach(([address, relictIds]) => {
-    Object.values(relictIds).forEach((relictId, index) => {
-      multi.call(
-        `${address}[${index}]`,
-        options.reliquaryAddress,
-        'getPositionForId',
-        [relictId]
-      );
-    });
-  });
-
-  const userPositions: Record<string, PositionInfo[]> = await multi.execute();
-
-  // now that we have all positions, we add up all position of the configured
-  // pool weighted by the level of the position in relation to the maxVotingLevel
+  // now that we have all positions & levels, we add up deposited amounts of the configured
+  // pool weighted by its level in relation to the maxVotingLevel
   const userAmounts: Record<string, number> = {};
 
-  Object.entries(userPositions).forEach(([address, positions]) => {
+  Object.entries(relicInfosByVoter).forEach(([address, infoByRelic]) => {
     let amount = 0;
-    for (let position of positions) {
-      if (position.poolId.toNumber() === options.poolId) {
-        amount +=
-          (Math.min(position.level.toNumber() + 1, options.maxVotingLevel + 1) /
-            (options.maxVotingLevel + 1)) *
-          parseFloat(formatUnits(position.amount, options.decimals ?? 18));
-      }
+    for (let relicInfo of Object.values(infoByRelic)) {
+      amount +=
+        (Math.min(relicInfo.level.toNumber() + 1, options.maxVotingLevel + 1) /
+          (options.maxVotingLevel + 1)) *
+        parseFloat(
+          formatUnits(relicInfo.position.amount, options.decimals ?? 18)
+        );
     }
     userAmounts[address] = amount;
   });
