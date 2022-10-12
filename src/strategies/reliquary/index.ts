@@ -156,7 +156,7 @@ export async function strategy(
     ([_, owner]) => lowerCaseAddresses.includes(owner.toLowerCase())
   );
 
-  // now we need to get their corresponding level
+  // now we need to get their corresponding level and deposited amount
   for (const [relicId, owner] of relicsOwnedByVoters) {
     multi.call(
       `${owner}.${relicId}.level`,
@@ -178,7 +178,7 @@ export async function strategy(
   > = await multi.execute();
 
   // now that we have all positions & levels, we add up deposited amounts of the configured
-  // pool weighted by its level in relation to the maxVotingLevel
+  // pool, weighted by its level in relation to the maxVotingLevel
   const userAmounts: Record<string, number> = {};
 
   Object.entries(relicInfosByVoter).forEach(([address, infoByRelic]) => {
