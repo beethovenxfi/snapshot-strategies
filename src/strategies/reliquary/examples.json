@@ -4,7 +4,8 @@
     "strategy": {
       "name": "reliquary",
       "params": {
-        "reliquaryAddress": "0x55df810876354Fc3e249f701Dd78DeDE57991F8D",
+        "reliquaryAddress": "0x8B9B86987E4ef90fd12d78EEb76D2BBd3ef2e987",
+        "reliquaryDeploymentBlock": 7766321,
         "poolId": 0,
         "maxVotingLevel": 7,
         "decimals": 18
@@ -17,6 +18,6 @@
       "0x1E243A85822E2CD42C81359E0ea42033000D02a4",
       "0xf7Ee8A9d014E9046D007bD448AaE7C667eF91E98"
     ],
-    "snapshot": 7627656
+    "snapshot": 7783714
   }
 ]

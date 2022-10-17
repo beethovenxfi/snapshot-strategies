@@ -24,6 +24,56 @@ const abi = [
   {
     inputs: [
       {
+        internalType: 'address',
+        name: 'from',
+        type: 'address',
+        indexed: true
+      },
+      {
+        internalType: 'address',
+        name: 'to',
+        type: 'address',
+        indexed: true
+      },
+      {
+        internalType: 'uint256',
+        name: 'tokenId',
+        type: 'uint256',
+        indexed: true
+      }
+    ],
+    type: 'event',
+    name: 'Transfer',
+    anonymous: false
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'pid',
+        type: 'uint256',
+        indexed: true
+      },
+      {
+        internalType: 'address',
+        name: 'to',
+        type: 'address',
+        indexed: true
+      },
+      {
+        internalType: 'uint256',
+        name: 'relicId',
+        type: 'uint256',
+        indexed: true
+      }
+    ],
+    type: 'event',
+    name: 'CreateRelic',
+    anonymous: false
+  },
+  {
+    inputs: [
+      {
         internalType: 'uint256',
         name: 'tokenId',
         type: 'uint256'
@@ -119,7 +169,7 @@ export async function strategy(
   addresses: string[],
   options: {
     reliquaryAddress: string;
-    reliquaryDeploymentBlock: BlockTag | string;
+    reliquaryDeploymentBlock: BlockTag;
     poolId: number;
     maxVotingLevel: number;
     decimals?: number;
@@ -136,16 +186,34 @@ export async function strategy(
     provider
   );
 
-  const relicFilter = reliquaryContract.filters.CreateRelic(options.poolId);
+  const createRelicFilter = reliquaryContract.filters.CreateRelic(
+    options.poolId
+  );
+  const burnRelicFilter = reliquaryContract.filters.Transfer(
+    undefined,
+    '0x0000000000000000000000000000000000000000'
+  );
+
   const createRelicEvents = await reliquaryContract.queryFilter(
-    relicFilter,
+    createRelicFilter,
     options.reliquaryDeploymentBlock
   );
 
+  const burnedRelicEvents = await reliquaryContract.queryFilter(
+    burnRelicFilter,
+    options.reliquaryDeploymentBlock
+  );
+
+  const burnedRelicIds = burnedRelicEvents.map((transferEvent) =>
+    transferEvent.args!.tokenId.toNumber()
+  );
+  const existingRelicIds = createRelicEvents
+    .map((relicEvent) => relicEvent.args!.relicId.toNumber())
+    .filter((relicId) => !burnedRelicIds.includes(relicId));
+
   const multi = new Multicaller(network, provider, abi, { blockTag });
 
-  for (let createRelicEvent of createRelicEvents) {
-    const relicId = createRelicEvent.args!.relicId;
+  for (let relicId of existingRelicIds) {
     multi.call(relicId, options.reliquaryAddress, 'ownerOf', [relicId]);
   }
 
@@ -162,13 +230,13 @@ export async function strategy(
       `${owner}.${relicId}.level`,
       options.reliquaryAddress,
       'levelOnUpdate',
-      relicId
+      [relicId]
     );
     multi.call(
       `${owner}.${relicId}.position`,
       options.reliquaryAddress,
       'getPositionForId',
-      relicId
+      [relicId]
     );
   }
 
