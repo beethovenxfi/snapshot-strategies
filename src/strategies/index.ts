@@ -1,7 +1,9 @@
 import { readFileSync } from 'fs';
 import path from 'path';
 
+import * as ecoVotingPower from './eco-voting-power';
 import * as dpsNFTStrategy from './dps-nft-strategy';
+import * as dpsNFTStrategyNova from './dps-nft-strategy-nova';
 import * as nounsPower from './nouns-rfp-power';
 import * as erc20Votes from './erc20-votes';
 import * as erc20VotesWithOverride from './erc20-votes-with-override';
@@ -91,6 +93,7 @@ import * as stakedKeep from './staked-keep';
 import * as stakedDaomaker from './staked-daomaker';
 import * as typhoon from './typhoon';
 import * as delegation from './delegation';
+import * as delegationWithOverrides from './delegation-with-overrides';
 import * as withDelegation from './with-delegation';
 import * as ticket from './ticket';
 import * as work from './work';
@@ -135,6 +138,7 @@ import * as avnBalanceOfStaked from './avn-balance-of-staked';
 import * as badgeth from './badgeth';
 import * as api from './api';
 import * as apiPost from './api-post';
+import * as apiV2 from './api-v2';
 import * as xseen from './xseen';
 import * as molochAll from './moloch-all';
 import * as molochLoot from './moloch-loot';
@@ -219,6 +223,7 @@ import * as hoprStaking from './hopr-staking';
 import * as hoprStakingS2 from './hopr-staking-s2';
 import * as hoprStakingBySeason from './hopr-staking-by-season';
 import * as hoprBridgedBalance from './hopr-bridged-balance';
+import * as hoprStakeAndBalanceQV from './hopr-stake-and-balance-qv';
 import * as lootCharacterGuilds from './loot-character-guilds';
 import * as swapr from './swapr';
 import * as cyberkongz from './cyberkongz';
@@ -248,6 +253,7 @@ import * as digitalaxLPStakers from './digitalax-lp-stakers';
 import * as digitalaxMonaStakersMatic from './digitalax-mona-stakers-matic';
 import * as digitalaxLPStakersMatic from './digitalax-lp-stakers-matic';
 import * as galaxyNftWithScore from './galaxy-nft-with-score';
+import * as galxeLoyaltyPoints from './galxe-loyalty-points';
 import * as gatenetTotalStaked from './gatenet-total-staked';
 import * as vesper from './vesper';
 import * as thales from './thales';
@@ -292,6 +298,7 @@ import * as givethGnosisBalanceV2 from './giveth-gnosis-balance-v2';
 import * as givethBalancerBalance from './giveth-balancer-balance';
 import * as erc1155BalanceOfIds from './erc1155-balance-of-ids';
 import * as erc1155BalanceOfIdsWeighted from './erc1155-balance-of-ids-weighted';
+import * as erc1155weighted from './erc1155-weighted-by-id';
 import * as stakersAndHolders from './stakers-and-holders';
 import * as banksyDao from './banksy-dao';
 import * as spacey2025 from './spacey2025';
@@ -335,8 +342,10 @@ import * as citydaoSquareRoot from './citydao-square-root';
 import * as recusalList from './recusal-list';
 import * as rowdyRoos from './rowdy-roos';
 import * as ethermon721 from './ethermon-erc721';
+import * as etherorcsComboBalanceOf from './etherorcs-combo-balanceof';
 import * as hedgey from './hedgey';
 import * as hedgeyMulti from './hedgey-multi';
+import * as hedgeyDelegate from './hedgey-delegate';
 import * as sybilProtection from './sybil-protection';
 import * as veBalanceOfAtNFT from './ve-balance-of-at-nft';
 import * as genzeesFromSubgraph from './genzees-from-subgraph';
@@ -348,7 +357,9 @@ import * as arrakisFinance from './arrakis-finance';
 import * as auraFinance from './aura-vlaura-vebal';
 import * as auraFinanceWithOverrides from './aura-vlaura-vebal-with-overrides';
 import * as auraBalanceOfVlauraVebal from './aura-balance-of-vlaura-vebal';
+import * as auraBalanceOfSingleAsset from './aura-vault-balance-of-single-asset';
 import * as rocketpoolNodeOperator from './rocketpool-node-operator';
+import * as rocketpoolNodeOperatorv2 from './rocketpool-node-operator-v2';
 import * as earthfundChildDaoStakingBalance from './earthfund-child-dao-staking-balance';
 import * as unipilotVaultPilotBalance from './unipilot-vault-pilot-balance';
 import * as sdBoostTWAVP from './sd-boost-twavp';
@@ -361,6 +372,7 @@ import * as lrcL2SubgraphBalanceOf from './lrc-l2-subgraph-balance-of';
 import * as lrcL2NftBalanceOf from './lrc-l2-nft-balance-of';
 import * as lrcLPSubgraphBalanceOf from './lrc-lp-subgraph-balance-of';
 import * as lrcNFTDAOSearch from './lrc-nft-dao-search';
+import * as lrcNFTmult from './lrc-nft-search-mult';
 import * as erc3525VestingVoucher from './erc3525-vesting-voucher';
 import * as rariFuse from './rari-fuse';
 import * as selfswap from './selfswap';
@@ -389,6 +401,7 @@ import * as syntheticNounsClaimerOwner from './synthetic-nouns-with-claimer';
 import * as depositInSablierStream from './deposit-in-sablier-stream';
 import * as echelonWalletPrimeAndCachedKey from './echelon-wallet-prime-and-cached-key';
 import * as nation3VotesWIthDelegations from './nation3-votes-with-delegations';
+import * as nation3CoopPassportWithDelegations from './nation3-passport-coop-with-delegations'
 import * as aavegotchiAgip37WapGhst from './aavegotchi-agip-37-wap-ghst';
 import * as aavegotchiAgip37GltrStakedLp from './aavegotchi-agip-37-gltr-staked-lp';
 import * as posichainStaking from './posichain-staking';
@@ -412,15 +425,42 @@ import * as skaleDelegationWeighted from './skale-delegation-weighted';
 import * as reliquary from './reliquary';
 import * as acrossStakedAcx from './across-staked-acx';
 import * as vstaPoolStaking from './vsta-pool-staking';
+import * as lodestarVesting from './lodestar-vesting';
+import * as lodestarStakedLp from './lodestar-staked-lp';
 import * as jpegdLockedJpegOf from './jpegd-locked-jpeg-of';
 import * as litDaoGovernance from './lit-dao-governance';
 import * as babywealthyclub from './babywealthyclub';
 import * as battleflyVGFLYAndStakedGFLY from './battlefly-vgfly-and-staked-gfly';
+import * as nexonArmyNFT from './nexon-army-nft';
+import * as moonbeamFreeBalance from './moonbeam-free-balance';
+import * as stakedotlinkVesting from './stakedotlink-vesting';
+import * as pspInSePSP2Balance from './psp-in-sepsp2-balance';
+import * as pdnBalancesAndVests from './pdn-balances-and-vests';
+import * as izumiVeiZi from './izumi-veizi';
+import * as lqtyProxyStakers from './lqty-proxy-stakers';
+import * as echelonWalletPrimeAndCachedKeyGated from './echelon-wallet-prime-and-cached-key-gated';
+import * as rdntCapitalVoting from './rdnt-capital-voting';
+import * as stakedDefiBalance from './staked-defi-balance';
+import * as degenzooErc721AnimalsWeighted from './degenzoo-erc721-animals-weighted';
+import * as capVotingPower from './cap-voting-power';
+import * as zunamiPoolGaugeAggregatedBalanceOf from './zunami-pool-gauge-aggregated-balance-of';
+import * as erc721CollateralHeld from './erc721-collateral-held';
+import * as starlayVeBalanceOfLockerId from './starlay-ve-balance-of-locker-id';
+import * as winrStaking from './winr-staking';
+import * as spaceid from './spaceid';
+import * as hatsProtocolSingleVotePerOrg from './hats-protocol-single-vote-per-org';
+import * as karmaDiscordRoles from './karma-discord-roles';
+import * as seedifyHoldStakingFarming from './seedify-cumulative-voting-power-hodl-staking-farming';
+import * as stakedMoreKudasai from './staked-morekudasai';
 
 const strategies = {
+  'cap-voting-power': capVotingPower,
+  'izumi-veizi': izumiVeiZi,
+  'eco-voting-power': ecoVotingPower,
   'forta-shares': fortaShares,
   'across-staked-acx': acrossStakedAcx,
   'ethermon-erc721': ethermon721,
+  'etherorcs-combo-balanceof': etherorcsComboBalanceOf,
   'recusal-list': recusalList,
   'landdao-token-tiers': landDaoTiers,
   'giveth-balancer-balance': givethBalancerBalance,
@@ -442,6 +482,7 @@ const strategies = {
   'dfyn-staked-in-farms': dfynFarms,
   'dfyn-staked-in-vaults': dfynVaults,
   'dps-nft-strategy': dpsNFTStrategy,
+  'dps-nft-strategy-nova': dpsNFTStrategyNova,
   'eth-received': ethReceived,
   'eth-philanthropy': ethPhilanthropy,
   'ens-domains-owned': ensDomainsOwned,
@@ -531,6 +572,7 @@ const strategies = {
   'balancer-unipool': balancerUnipool,
   typhoon,
   delegation,
+  'delegation-with-overrides': delegationWithOverrides,
   'with-delegation': withDelegation,
   ticket,
   work,
@@ -572,6 +614,7 @@ const strategies = {
   'avn-balance-of-staked': avnBalanceOfStaked,
   api,
   'api-post': apiPost,
+  'api-v2': apiV2,
   xseen,
   'moloch-all': molochAll,
   'moloch-loot': molochLoot,
@@ -640,6 +683,7 @@ const strategies = {
   'hopr-staking': hoprStaking,
   'hopr-staking-s2': hoprStakingS2,
   'hopr-staking-by-season': hoprStakingBySeason,
+  'hopr-stake-and-balance-qv': hoprStakeAndBalanceQV,
   'hopr-bridged-balance': hoprBridgedBalance,
   'occ-stake-of': occStakeOf,
   swapr,
@@ -671,6 +715,7 @@ const strategies = {
   'digitalax-lp-stakers-matic': digitalaxLPStakersMatic,
   'colony-reputation': colonyReputation,
   'galaxy-nft-with-score': galaxyNftWithScore,
+  'galxe-loyalty-points': galxeLoyaltyPoints,
   'gatenet-total-staked': gatenetTotalStaked,
   vesper,
   thales,
@@ -715,6 +760,7 @@ const strategies = {
   'staked-uniswap-modifiable': stakedUniswapModifiable,
   'erc1155-balance-of-ids': erc1155BalanceOfIds,
   'erc1155-balance-of-ids-weighted': erc1155BalanceOfIdsWeighted,
+  'erc1155-weighted-by-id': erc1155weighted,
   'stakers-and-holders': stakersAndHolders,
   'banksy-dao': banksyDao,
   spacey2025: spacey2025,
@@ -759,6 +805,7 @@ const strategies = {
   'rowdy-roos': rowdyRoos,
   hedgey,
   'hedgey-multi': hedgeyMulti,
+  'hedgey-delegate': hedgeyDelegate,
   've-balance-of-at-nft': veBalanceOfAtNFT,
   'genzees-from-subgraph': genzeesFromSubgraph,
   'gin-finance': ginFinance,
@@ -769,7 +816,9 @@ const strategies = {
   'aura-vlaura-vebal': auraFinance,
   'aura-vlaura-vebal-with-overrides': auraFinanceWithOverrides,
   'aura-balance-of-vlaura-vebal': auraBalanceOfVlauraVebal,
+  'aura-vault-balance-of-single-asset': auraBalanceOfSingleAsset,
   'rocketpool-node-operator': rocketpoolNodeOperator,
+  'rocketpool-node-operator-v2': rocketpoolNodeOperatorv2,
   'earthfund-child-dao-staking-balance': earthfundChildDaoStakingBalance,
   'sd-boost-twavp': sdBoostTWAVP,
   'unipilot-vault-pilot-balance': unipilotVaultPilotBalance,
@@ -783,6 +832,7 @@ const strategies = {
   'lrc-l2-nft-balance-of': lrcL2NftBalanceOf,
   'lrc-lp-subgraph-balance-of': lrcLPSubgraphBalanceOf,
   'lrc-nft-dao-search': lrcNFTDAOSearch,
+  'lrc-nft-search-mult': lrcNFTmult,
   'rari-fuse': rariFuse,
   'bancor-pool-token-underlying-balance': bancorPoolTokenUnderlyingBalance,
   selfswap,
@@ -813,6 +863,7 @@ const strategies = {
   'deposit-in-sablier-stream': depositInSablierStream,
   'echelon-wallet-prime-and-cached-key': echelonWalletPrimeAndCachedKey,
   'nation3-votes-with-delegations': nation3VotesWIthDelegations,
+  'nation3-passport-coop-with-delegations':nation3CoopPassportWithDelegations,
   'aavegotchi-agip-37-wap-ghst': aavegotchiAgip37WapGhst,
   'aavegotchi-agip-37-gltr-staked-lp': aavegotchiAgip37GltrStakedLp,
   'erc20-tokens-per-uni': erc20TokensPerUni,
@@ -836,8 +887,31 @@ const strategies = {
   reliquary,
   'vsta-pool-staking': vstaPoolStaking,
   'jpegd-locked-jpeg-of': jpegdLockedJpegOf,
+  'lodestar-vesting': lodestarVesting,
+  'lodestar-staked-lp': lodestarStakedLp,
   babywealthyclub,
-  'battlefly-vgfly-and-staked-gfly': battleflyVGFLYAndStakedGFLY
+  'battlefly-vgfly-and-staked-gfly': battleflyVGFLYAndStakedGFLY,
+  'nexon-army-nft': nexonArmyNFT,
+  'moonbeam-free-balance': moonbeamFreeBalance,
+  'stakedotlink-vesting': stakedotlinkVesting,
+  'psp-in-sepsp2-balance': pspInSePSP2Balance,
+  'pdn-balances-and-vests': pdnBalancesAndVests,
+  'lqty-proxy-stakers': lqtyProxyStakers,
+  'echelon-wallet-prime-and-cached-key-gated':
+    echelonWalletPrimeAndCachedKeyGated,
+  'rdnt-capital-voting': rdntCapitalVoting,
+  'staked-defi-balance': stakedDefiBalance,
+  'degenzoo-erc721-animals-weighted': degenzooErc721AnimalsWeighted,
+  'zunami-pool-gauge-aggregated-balance-of': zunamiPoolGaugeAggregatedBalanceOf,
+  'erc721-collateral-held': erc721CollateralHeld,
+  'starlay-ve-balance-of-locker-id': starlayVeBalanceOfLockerId,
+  'winr-staking': winrStaking,
+  spaceid,
+  'hats-protocol-single-vote-per-org': hatsProtocolSingleVotePerOrg,
+  'karma-discord-roles': karmaDiscordRoles,
+  'seedify-cumulative-voting-power-hodl-staking-farming':
+    seedifyHoldStakingFarming,
+  'staked-morekudasai': stakedMoreKudasai
 };
 
 Object.keys(strategies).forEach(function (strategyName) {
